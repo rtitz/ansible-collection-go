@@ -1,0 +1,17 @@
+---
+- name: Confirm
+  ansible.builtin.pause:
+    prompt: "Press ENTER to continue with installation of Go (Version: {{ go_version }}) (CTRL + C to cancel)"
+  when: confirm_playbook
+
+- name: Go Installation (Linux)
+  ansible.builtin.include_tasks: tasks/go.yml
+  when: configure_go and ansible_distribution != 'MacOSX'
+  
+- name: Go Installation (macOS)
+  ansible.builtin.include_tasks: tasks/go_MacOSX.yml
+  when: configure_go and ansible_distribution == 'MacOSX'
+  
+- name: Finished
+  ansible.builtin.debug:
+    msg: "Done!"

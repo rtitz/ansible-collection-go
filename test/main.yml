@@ -1,0 +1,11 @@
+---
+- hosts: all
+  become: false
+  gather_facts: yes
+  collections:
+   - local.go
+
+  tasks:
+    - name: Import role
+      ansible.builtin.import_role:
+        name: install_go

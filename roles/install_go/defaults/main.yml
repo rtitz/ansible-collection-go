@@ -1,0 +1,21 @@
+---
+confirm_playbook: true
+
+configure_go: true
+go_version: go1.22.0 # See: https://go.dev/dl/
+go_download_dir: /tmp
+cleanup_go_installer: false
+go_path: $HOME/go
+
+go_url_x86_64: "https://go.dev/dl/{{ go_version }}.linux-amd64.tar.gz"
+go_url_i386: "https://go.dev/dl/{{ go_version }}.linux-386.tar.gz"
+go_url_aarch64: "https://go.dev/dl/{{ go_version }}.linux-arm64.tar.gz"
+go_url_armv7l: "https://go.dev/dl/{{ go_version }}.linux-armv6l.tar.gz" # There is now explicit armv7l, but armv6l works here
+go_url_armv6l: "https://go.dev/dl/{{ go_version }}.linux-armv6l.tar.gz"
+
+# macOS specific
+go_download_dir_mac: $HOME/Applications/go-installer
+go_install_dir_mac: $HOME/Applications
+
+go_url_x86_64_mac: "https://go.dev/dl/{{ go_version }}.darwin-amd64.tar.gz"
+go_url_aarch64_mac: "https://go.dev/dl/{{ go_version }}.darwin-arm64.tar.gz"

@@ -1,0 +1,47 @@
+---
+
+- name: Make Download dir
+  ansible.builtin.file:
+    path: "{{ go_download_dir_mac }}"
+    state: directory
+
+- name: Make Install dir
+  ansible.builtin.file:
+    path: "{{ go_install_dir_mac }}"
+    state: directory
+
+# Download 
+- name: Download Go (for x86_64)
+  ansible.builtin.get_url:
+    url: "{{ go_url_x86_64_mac }}"
+    dest: "{{ go_download_dir_mac }}/"
+  when: ansible_architecture == 'x86_64'
+  register: download_go1
+
+- name: Download Go (for aarch64)
+  ansible.builtin.get_url:
+    url: "{{ go_url_aarch64_mac }}"
+    dest: "{{ go_download_dir_mac }}/"
+  when: ansible_architecture == 'arm64'
+  register: download_go2
+
+# Extract and set path
+- name: Extracting Go
+  ansible.builtin.shell:
+    cmd: rm -rf {{ go_install_dir_mac }}/go && tar -C {{ go_install_dir_mac }} -xzf {{ go_download_dir_mac }}/{{ go_version }}*.tar.gz
+  changed_when: false
+  when: (download_go1.changed) or (download_go2.changed) 
+
+- name: Configure PATH and GOPATH variable
+  ansible.builtin.blockinfile:
+    path: $HOME/.zshrc
+    block: |
+      export PATH="{{ go_install_dir_mac }}/go/bin:$PATH"
+      export GOPATH="{{ go_path }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK FOR GO PATH"
+
+- name: Cleanup (Remove Go installation package)
+  ansible.builtin.shell:
+    cmd: rm -f {{ go_download_dir_mac }}/{{ go_version }}*.tar.gz
+  when: cleanup_go_installer  
+
