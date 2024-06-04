@@ -2,7 +2,7 @@
 confirm_playbook: true
 
 configure_go: true
-go_version: go1.22.3 # See: https://go.dev/dl/
+go_version: go1.22.4 # See: https://go.dev/dl/
 go_download_dir: /tmp
 cleanup_go_installer: false
 go_path: $HOME/go
