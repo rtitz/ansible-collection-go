@@ -1,0 +1,4 @@
+---
+collections:
+  - name: https://github.com/rtitz/ansible-collection-go.git
+    type: git

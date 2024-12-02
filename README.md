@@ -9,8 +9,8 @@
 
 ### Run the Ansible playbook:
 ```zsh
- ansible-playbook -i test/inventory test/main.yml -K
- ```
+ansible-galaxy install -r requirements.yml && ansible-playbook -i test/inventory test/main.yml -K
+```
   * Ansible will ask for the 'BECOME password', this is your sudo password
   * After the installation a reboot is needed, to ensure that the new environment variables are loaded correctly
 
