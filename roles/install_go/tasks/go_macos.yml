@@ -15,14 +15,14 @@
   ansible.builtin.get_url:
     url: "{{ go_url_x86_64_mac }}"
     dest: "{{ go_download_dir_mac }}/"
-  when: ansible_architecture == 'x86_64'
+  when: ansible_facts["architecture"] == 'x86_64'
   register: download_go1
 
 - name: Download Go (for aarch64)
   ansible.builtin.get_url:
     url: "{{ go_url_aarch64_mac }}"
     dest: "{{ go_download_dir_mac }}/"
-  when: ansible_architecture == 'arm64'
+  when: ansible_facts["architecture"] == 'arm64'
   register: download_go2
 
 # Extract and set path

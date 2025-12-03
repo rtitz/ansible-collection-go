@@ -5,12 +5,12 @@
   when: confirm_playbook
 
 - name: Go Installation (Linux)
-  ansible.builtin.include_tasks: tasks/go.yml
-  when: configure_go and ansible_distribution != 'MacOSX'
+  ansible.builtin.include_tasks: tasks/go_linux.yml
+  when: configure_go and ansible_facts["distribution"] != 'MacOSX'
   
 - name: Go Installation (macOS)
-  ansible.builtin.include_tasks: tasks/go_MacOSX.yml
-  when: configure_go and ansible_distribution == 'MacOSX'
+  ansible.builtin.include_tasks: tasks/go_macos.yml
+  when: configure_go and ansible_facts["distribution"] == 'MacOSX'
   
 - name: Finished
   ansible.builtin.debug:
