@@ -1,4 +1,3 @@
----
 - name: Make Download dir
   ansible.builtin.file:
     path: "{{ go_download_dir_mac }}"
@@ -9,41 +8,66 @@
     path: "{{ go_install_dir_mac }}"
     state: directory
 
-# Download 
 - name: Download Go (for x86_64)
   ansible.builtin.get_url:
     url: "{{ go_url_x86_64_mac }}"
-    dest: "{{ go_download_dir_mac }}/"
+    dest: "{{ go_download_dir_mac }}/go-{{ go_version }}.tar.gz"
   when: ansible_facts["architecture"] == 'x86_64'
-  register: download_go1
 
 - name: Download Go (for aarch64)
   ansible.builtin.get_url:
     url: "{{ go_url_aarch64_mac }}"
-    dest: "{{ go_download_dir_mac }}/"
+    dest: "{{ go_download_dir_mac }}/go-{{ go_version }}.tar.gz"
   when: ansible_facts["architecture"] in ['arm64', 'aarch64']
-  register: download_go2
 
-# Extract, set path and fix quarantine / cache permissions
-- name: Extracting Go
-  ansible.builtin.shell:
-    cmd: |
-      rm -rf {{ go_install_dir_mac }}/go
-      tar -C {{ go_install_dir_mac }} -xzf {{ go_download_dir_mac }}/{{ go_version }}*.tar.gz
-      xattr -dr com.apple.quarantine {{ go_install_dir_mac }}/go 2>/dev/null || true
-      [ -d "{{ ansible_env.HOME }}/Library/Caches/go-build" ] && chown -R {{ ansible_env.USER }}:staff "{{ ansible_env.HOME }}/Library/Caches/go-build" || true
+- name: Check currently installed Go version
+  ansible.builtin.command:
+    cmd: "{{ go_install_dir_mac }}/go/bin/go version"
+  register: current_go_version
+  failed_when: false
   changed_when: false
-  when: (download_go1.changed) or (download_go2.changed) or not (go_install_dir_mac + '/go/bin/go') is file
+
+- name: Remove old Go installation if version mismatch
+  ansible.builtin.file:
+    path: "{{ go_install_dir_mac }}/go"
+    state: absent
+  when:
+    - current_go_version.rc == 0
+    - "go_version not in current_go_version.stdout"
+
+- name: Extract Go archive
+  ansible.builtin.unarchive:
+    src: "{{ go_download_dir_mac }}/go-{{ go_version }}.tar.gz"
+    dest: "{{ go_install_dir_mac }}"
+    remote_src: true
+    creates: "{{ go_install_dir_mac }}/go/bin/go"
+
+- name: Strip macOS Gatekeeper quarantine flag
+  ansible.builtin.command:
+    cmd: "xattr -dr com.apple.quarantine {{ go_install_dir_mac }}/go"
+  failed_when: false
+  changed_when: false
+
+- name: Fix root-owned go-build cache permissions
+  ansible.builtin.file:
+    path: "{{ ansible_facts['env']['HOME'] | default('~') }}/Library/Caches/go-build"
+    owner: "{{ ansible_user_id }}"
+    group: "staff"
+    recurse: true
+  failed_when: false
+  when: (ansible_facts['env']['HOME'] | default('~') + '/Library/Caches/go-build') is directory
 
 - name: Configure PATH and GOPATH variable
   ansible.builtin.blockinfile:
-    path: "{{ ansible_env.HOME }}/.zshrc"
+    path: "{{ ansible_facts['env']['HOME'] | default('~') }}/.zshrc"
     block: |
       export GOPATH="{{ go_path }}"
       export PATH="{{ go_install_dir_mac }}/go/bin:$GOPATH/bin:$PATH"
     marker: "# {mark} ANSIBLE MANAGED BLOCK FOR GO PATH"
+    create: true
 
 - name: Cleanup (Remove Go installation package)
-  ansible.builtin.shell:
-    cmd: rm -f {{ go_download_dir_mac }}/{{ go_version }}*.tar.gz
-  when: cleanup_go_installer
+  ansible.builtin.file:
+    path: "{{ go_download_dir_mac }}/go-{{ go_version }}.tar.gz"
+    state: absent
+  when: cleanup_go_installer | default(false)
