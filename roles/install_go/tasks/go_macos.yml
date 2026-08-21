@@ -51,7 +51,7 @@
 - name: Fix root-owned go-build cache permissions
   ansible.builtin.file:
     path: "{{ ansible_facts['env']['HOME'] | default('~') }}/Library/Caches/go-build"
-    owner: "{{ ansible_user_id }}"
+    owner: "{{ ansible_facts['user_id'] }}"
     group: "staff"
     recurse: true
   failed_when: false
