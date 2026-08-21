@@ -1,5 +1,4 @@
 ---
-
 # Download 
 - name: Download Go (for x86_64)
   ansible.builtin.get_url:
@@ -15,11 +14,11 @@
   when: ansible_facts["architecture"] == 'i386'
   register: download_go2
 
-- name: Download Go (for aarch64)
+- name: Download Go (for aarch64 / arm64)
   ansible.builtin.get_url:
     url: "{{ go_url_aarch64 }}"
     dest: "{{ go_download_dir }}/"
-  when: ansible_facts["architecture"] == 'aarch64'
+  when: ansible_facts["architecture"] in ['aarch64', 'arm64']
   register: download_go3
 
 - name: Download Go (for armv7l)
@@ -42,12 +41,18 @@
     cmd: rm -rf /usr/local/go && tar -C /usr/local -xzf {{ go_download_dir }}/{{ go_version }}*.tar.gz
   changed_when: false
   become: true
-  when: (download_go1.changed) or (download_go2.changed) or (download_go3.changed) or (download_go4.changed) or (download_go5.changed)
+  when: >
+    (download_go1.changed) or 
+    (download_go2.changed) or 
+    (download_go3.changed) or 
+    (download_go4.changed) or 
+    (download_go5.changed) or 
+    not '/usr/local/go/bin/go' is file
 
 - name: Add Go bin directory to system-wide $PATH
   ansible.builtin.copy:
     dest: /etc/profile.d/go-path.sh
-    content: 'PATH=$PATH:/usr/local/go/bin'
+    content: 'export PATH=$PATH:/usr/local/go/bin'
     mode: '0755'
     owner: "root"
     group: "root"
