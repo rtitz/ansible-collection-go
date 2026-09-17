@@ -6,7 +6,7 @@ Installs and configures the Go Programming Language ([https://go.dev/](https://g
 
 * **Ansible Core:** 2.12 or higher
 * **Target Systems:**
-  * **macOS:** macOS 11+ (Intel & Apple Silicon)
+  * **macOS:** macOS 11+ (Intel & Apple Silicon) (**brew install gnu-tar** maybe required for macOS!)
   * **Linux:** Debian, Ubuntu, RHEL, CentOS, Fedora, Arch, Raspberry Pi OS
 
 ## Features
